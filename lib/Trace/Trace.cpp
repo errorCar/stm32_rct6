@@ -53,5 +53,7 @@ float Trace::get_state()
         return -1;
     if (grc() && !grr() && !glc()) // state X010 小左转
         return 1;
+    // left core core|| right core core || left core core right 
+    
     return 0;
 }

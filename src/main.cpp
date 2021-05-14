@@ -7,7 +7,7 @@
 #include <Trace.h>    // 循迹
 #include <Motor.h>    // 电机控制
 #include <Battery.h>  // 电量检测
-
+#include <Buzzer.h>
 // 屏幕
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -44,11 +44,12 @@ Trace t(LL, LC, RC, RR); // 初始化循迹传感器模块
 #define PWMR PB9
 #define AINR PB12
 #define BINR PB13
-
+#define DURATION 1000
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
 
 Battery bat; // 初始化电池对象
+Buzzer buz(PA8); // 
 // *初始化速度参数 范围 0 ~ 255
 int16_t speedl = 40;
 int16_t speedr = speedl * 1.05;  // 右电机补偿
@@ -57,9 +58,9 @@ const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
 float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
-
+unsigned long pre_time = 0,now_time = 0;
 void calc_pid(); // 计算PID函数
-
+void buzzer_beep();
 int num = 0;
 void num_add()
 {
@@ -84,13 +85,23 @@ void setup()
 
 void loop()
 {
+  now_time=millis();
   display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差
   calc_pid();
   // *PID速度修正
-  lm.forward(speedl + pid_val);
-  rm.forward(speedr - pid_val);
+    lm.forward(speedl + pid_val);
+    rm.forward(speedr - pid_val);
+  // 遇障碍物时会有显著的停顿 => 以此作为判断 有问题
+  // !beep蜂鸣器
+  // if(error == 0.1)
+  //   buzzer_beep();
+  // if(now_time - pre_time> DURATION)
+  // {
+  //     buz.stop();
+  //     pre_time = millis();
+  // }
   // !显示部分
   // *显示时间
   display.setCursor(0, 0);
@@ -130,4 +141,8 @@ void calc_pid()
   I = (I < -MAXI) ? -MAXI : I;
   I = (I > MAXI) ? MAXI : I;
   pid_val = (Kp * P) + (Ki * I) + (Kd * D);
+}
+void buzzer_beep()
+{
+  buz.beep();
 }
