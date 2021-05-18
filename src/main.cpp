@@ -51,8 +51,8 @@ Trace t(LL, LC, RC, RR); // 初始化循迹传感器模块
 // #define DURATION 1000
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
-Infrared Inf_l(INFRA_L);
-Infrared Inf_r(INFRA_R);
+Infrared Inf_l(INFRA_L);// 红外模块_左
+Infrared Inf_r(INFRA_R);// 红外模块_右
 Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
@@ -95,20 +95,11 @@ void loop()
   //todo  3.加键盘调参
   display.clearDisplay();
   // !修正部分
-  error = t.get_state(); // 采集误差
+  error = t.get_state(); // 采集误差  5 2 1
   // 加上角度!!!!
   calc_pid();
   // 判断处于直线rush
-  // speedl = 40;// 初始化
-  // speedr = 40*1.05;
-  // if(D<1e-5)
-  // {
-  //   speedl *=1.3;
-  //   speedr *=1.3; 
-  // }
-  // *PID速度修正
-    lm.forward(speedl + pid_val);
-    rm.forward(speedr - pid_val);
+  rush_straight();
 
   //! beep()
   // if(find_obs())
@@ -155,4 +146,17 @@ void calc_pid()
   I = (I < -MAXI) ? -MAXI : I;
   I = (I > MAXI) ? MAXI : I;
   pid_val = (Kp * P) + (Ki * I) + (Kd * D);
+}
+void rush_straight()
+{
+  speedl = 40;// 初始化
+  speedr = 40*1.05;
+  if(D<1e-5)// 其实1 也行??? 测试好像有问题!!!! pid_val 就需要改??
+  {// 加速 (需要重新调参??)
+    speedl *=1.3;
+    speedr *=1.3; 
+  }
+  // *PID速度修正
+  lm.forward(speedl + pid_val);
+  rm.forward(speedr - pid_val);
 }
