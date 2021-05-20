@@ -58,7 +58,7 @@ Battery bat; // 初始化电池对象
 // *初始化速度参数 范围 0 ~ 255
 int16_t speedl = 40;
 int16_t speedr = speedl * 1.05;  // 右电机补偿
-float Kp = 8, Ki = 0.019, Kd = 40; // PID参数  
+float Kp = 8, Ki = 0.015, Kd = 30; // PID参数  
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -77,6 +77,19 @@ void begin_beep()
     dl.beep();
     // delayMicroseconds(50);
 }
+void rush_straight()
+{
+  speedl = 40;// 初始化
+  speedr = 40*1.05;
+  if(D<1e-5)// 其实1 也行??? 测试好像有问题!!!! pid_val 就需要改??
+  {// 加速 (需要重新调参??)
+    speedl *=1.3;
+    speedr *=1.3; 
+  }
+  // *PID速度修正
+  lm.forward(speedl + pid_val);
+  rm.forward(speedr - pid_val);
+}
 void setup()
 {
   // *屏幕初始化
@@ -91,8 +104,8 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
-  attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
-  attachInterrupt(digitalPinToInterrupt(PC1),begin_beep,FALLING);
+  // attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PA1),begin_beep,FALLING);
 }
 
 void loop()
@@ -105,6 +118,8 @@ void loop()
   error = t.get_state(); // 采集误差  5 2 1
   // 加上角度!!!!
   calc_pid();
+  lm.forward(speedl + pid_val);
+  rm.forward(speedr - pid_val);
   // 判断处于直线rush
   // rush_straight();
   //! beep()
@@ -151,16 +166,4 @@ void calc_pid()
   I = (I > MAXI) ? MAXI : I;
   pid_val = (Kp * P) + (Ki * I) + (Kd * D);
 }
-void rush_straight()
-{
-  speedl = 40;// 初始化
-  speedr = 40*1.05;
-  if(D<1e-5)// 其实1 也行??? 测试好像有问题!!!! pid_val 就需要改??
-  {// 加速 (需要重新调参??)
-    speedl *=1.3;
-    speedr *=1.3; 
-  }
-  // *PID速度修正
-  lm.forward(speedl + pid_val);
-  rm.forward(speedr - pid_val);
-}
+
