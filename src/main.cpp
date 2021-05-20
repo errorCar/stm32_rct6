@@ -8,7 +8,7 @@
 #include <Motor.h>    // 电机控制
 #include <Battery.h>  // 电量检测
 #include <Infrared.h>
-// #include <Buzzer.h>
+
 // 屏幕
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -72,6 +72,11 @@ void num_add()
 {
    num++;
 }
+void begin_beep()
+{
+    dl.beep();
+    // delayMicroseconds(50);
+}
 void setup()
 {
   // *屏幕初始化
@@ -86,6 +91,8 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC1),begin_beep,FALLING);
 }
 
 void loop()
@@ -99,14 +106,10 @@ void loop()
   // 加上角度!!!!
   calc_pid();
   // 判断处于直线rush
-  rush_straight();
-
+  // rush_straight();
   //! beep()
-  // if(find_obs())
-  // {
-  //   dl.beep();
-  //   //dl.stop_beep();
-  // }
+  dl.stop_beep();
+
   // !显示部分
   // *显示时间
   display.setCursor(0, 0);
@@ -123,6 +126,7 @@ void loop()
   // display.print(lm.speed());
   // display.print(" RMS:"); // 右轮速度
   // display.println(rm.speed());
+
   // *pid参数+优化
   display.print("PID-VAL:");
   display.println(pid_val);
