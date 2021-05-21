@@ -66,7 +66,7 @@ float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
 unsigned long now_time=0;
 bool is_straight=false;
 void calc_pid(); // 计算PID函数
-void buzzer_beep();
+
 int num = 0;
 void num_add()
 {
