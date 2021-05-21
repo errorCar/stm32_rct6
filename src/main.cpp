@@ -66,7 +66,7 @@ float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
 unsigned long now_time=0;
 bool is_straight=false;
 void calc_pid(); // 计算PID函数
-void buzzer_beep();
+
 int num = 0;
 void num_add()
 {
@@ -104,8 +104,8 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
-  attachInterrupt(digitalPinToInterrupt(PA1),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC1),begin_beep,FALLING);
 }
 
 void loop()
