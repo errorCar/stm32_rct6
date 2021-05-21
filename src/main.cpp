@@ -104,8 +104,8 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
-  attachInterrupt(digitalPinToInterrupt(PA1),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
+  attachInterrupt(digitalPinToInterrupt(PC1),begin_beep,FALLING);
 }
 
 void loop()
