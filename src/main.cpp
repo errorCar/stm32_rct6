@@ -59,10 +59,10 @@ Infrared Inf_r(INFRA_R);// 红外模块_右
 Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
-#define SPEED_VALUE 30
-int16_t speedl = 30;
+#define SPEED_VALUE 20
+int16_t speedl = SPEED_VALUE;
 int16_t speedr = speedl * 1.05;  // 右电机补偿
-float Kp = 8, Ki = 0.015, Kd = 30; // PID参数  
+float Kp = 6, Ki = 0.01, Kd = 20; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -131,7 +131,7 @@ void loop()
   //todo  2.调参跑圈
   //todo  3.加键盘调参
   // !转弯while
-  // ! 暴力delay when turn
+  ////!暴力delay when turn xxx 会导致停顿之后迅速转弯，
   // ! 调大I
   display.clearDisplay();
   // !修正部分
@@ -139,12 +139,10 @@ void loop()
   // 加上角度!!!!
   calc_pid();
   //手动加上延迟
-  lm.forward(speedl - pid_val);
-  rm.forward(speedr + pid_val);
-  // if( error == 5 || error == -5)//should left
-  // {
-  //   delay(500);// add delay？？or delay more
-  // }
+  // pid_val *= 0.5;
+  pid_val*=2;
+  lm.forward(speedl + pid_val);
+  rm.forward(speedr - pid_val);
     
   // !显示部分
   // *显示时间
@@ -174,8 +172,12 @@ void loop()
 
   display.display();
 }
-
-// PID算法
+//   检测到大转弯的时候?持续时间不够? 或者说得到的pid_val 的值不够大??
+//   因为检测到的时间只有一瞬，之后又检测不到了，导致 I 积累不起来? 或者说 D==0 ? 
+//   如何让它保持原状态???
+//   或者直行灯闪烁的时候做出判断??
+//   不让小车没有检测到的时候保持直线状态? 而是维持上一个状态！
+//  PID算法
 void calc_pid()
 {
   P = error;             // 比例

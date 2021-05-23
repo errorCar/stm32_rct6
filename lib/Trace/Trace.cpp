@@ -42,9 +42,9 @@ float Trace::get_state()
     //     return 99;
 
     if (gll() && !glc()) // state 10XX 大右转
-        return -5;
+        return -5.5;
     if (grr() && !grc()) // state XX01 大左转
-        return 5;
+        return 5.5;
     if (gll() && glc() && !grc()) // state 110X 中右转
         return -2;
     if (grr() && grc() && !glc()) // state X011 中左转
