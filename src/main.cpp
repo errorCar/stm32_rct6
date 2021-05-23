@@ -48,6 +48,9 @@ Trace t(LL, LC, RC, RR); // 初始化循迹传感器模块
 // *左右红外检测
 #define INFRA_L PC0
 #define INFRA_R PC1
+// *big turn value
+#define BIG_TURN_V  5 
+#define TURN_V 3
 // #define DURATION 1000
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
@@ -78,7 +81,31 @@ void begin_beep()
     dl.beep();
     // delayMicroseconds(50);
 }
-//
+void turn_big_r()
+{
+  // calc_pid();
+  lm.forward(speedl + BIG_TURN_V);
+  rm.forward(speedr - BIG_TURN_V);
+  delayMicroseconds(500);
+}
+void turn_r()
+{
+  lm.forward(speedl + TURN_V);
+  rm.forward(speedr - TURN_V );
+  delayMicroseconds(500);
+}
+void turn_l()
+{
+  lm.forward(speedl - TURN_V);
+  rm.forward(speedr + TURN_V );
+  delayMicroseconds(500);
+}
+void turn_big_l()
+{
+  lm.forward(speedl - BIG_TURN_V);
+  rm.forward(speedr + BIG_TURN_V);
+  delayMicroseconds(500);
+}
 void setup()
 {
   // *屏幕初始化
@@ -93,40 +120,32 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(PC0),begin_beep,FALLING);
-  // attachInterrupt(digitalPinToInterrupt(PC1),begin_beep,FALLING);
 }
-
+// PA15
+// PC10
+// PC11
+// PC12
 void loop()
 {
   //todo 1.红外检测障碍
   //todo  2.调参跑圈
   //todo  3.加键盘调参
+  // !转弯while
+  // ! 暴力delay when turn
+  // ! 调大I
   display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
   // 加上角度!!!!
   calc_pid();
-  // 1. des in main()
-  // 2.转弯的力度再大一点
-  if(error == -5 || error == 5)// right turn || left turn => decreacs
+  //手动加上延迟
+  lm.forward(speedl - pid_val);
+  rm.forward(speedr + pid_val);
+  if( error == 5 || error == -5)//should left
   {
-    speedl = speedl * 0.7;
-    speedr = speedr *1.05 * 0.7;
-    // pid_val = pid_val * 0.6; 
+    delay(500);// add delay？？ can do it？？or delay more
   }
-  else// return pure
-  {
-    speedl = SPEED_VALUE;
-    speedr = SPEED_VALUE*1.05;
-  }
-  lm.forward(speedl + pid_val);
-  rm.forward(speedr - pid_val);
-  // 判断处于直线rush
-  // rush_straight();
-  //! beep()
-  dl.stop_beep();
-
+    
   // !显示部分
   // *显示时间
   display.setCursor(0, 0);
