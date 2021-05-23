@@ -141,10 +141,10 @@ void loop()
   //手动加上延迟
   lm.forward(speedl - pid_val);
   rm.forward(speedr + pid_val);
-  if( error == 5 || error == -5)//should left
-  {
-    delay(500);// add delay？？ can do it？？or delay more
-  }
+  // if( error == 5 || error == -5)//should left
+  // {
+  //   delay(500);// add delay？？or delay more
+  // }
     
   // !显示部分
   // *显示时间
