@@ -14,22 +14,25 @@
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // *超声波引脚
-#define DL_TRIG PC2
-#define DL_ECHO PC3
-#define DC_TRIG PC0
-#define DC_ECHO PC1
-#define DR_TRIG PC14
-#define DR_ECHO PC15
-Dis dl(DL_TRIG, DL_ECHO); // 左超声波
-Dis dc(DC_TRIG, DC_ECHO); // 中超声波
-Dis dr(DR_TRIG, DR_ECHO); // 右超声波
+// #define DL_TRIG PC2
+// #define DL_ECHO PC3
+// #define DC_TRIG PC0
+// #define DC_ECHO PC1
+// #define DR_TRIG PC14
+// #define DR_ECHO PC15
+// Dis dl(DL_TRIG, DL_ECHO); // 左超声波
+// Dis dc(DC_TRIG, DC_ECHO); // 中超声波
+// Dis dr(DR_TRIG, DR_ECHO); // 右超声波
 
 // *循迹检测
 #define LL PA15
 #define LC PC10
 #define RC PC11
 #define RR PC12
-Trace t(LL, LC, RC, RR); // 初始化循迹传感器模块
+#define L2 PC2
+#define R2 PC3
+#define CORE PC14
+Trace t(LL, LC, RC, RR,L2,R2,CORE); // 初始化循迹传感器模块
 
 // *左电机 电机检测
 #define AL PA2
@@ -76,11 +79,11 @@ void num_add()
 {
    num++;
 }
-void begin_beep()
-{
-    dl.beep();
-    // delayMicroseconds(50);
-}
+// void begin_beep()
+// {
+//     dl.beep();
+//     // delayMicroseconds(50);
+// }
 void turn_big_r()
 {
   // calc_pid();
@@ -140,9 +143,9 @@ void loop()
   calc_pid();
   //手动加上延迟
   // pid_val *= 0.5;
-  pid_val*=2;
-  lm.forward(speedl + pid_val);
-  rm.forward(speedr - pid_val);
+  // pid_val*=2;
+  lm.forward(speedl - pid_val);
+  rm.forward(speedr + pid_val);
     
   // !显示部分
   // *显示时间
@@ -177,7 +180,7 @@ void loop()
 //   如何让它保持原状态???
 //   或者直行灯闪烁的时候做出判断??
 //   不让小车没有检测到的时候保持直线状态? 而是维持上一个状态！
-//  PID算法
+//   PID算法
 void calc_pid()
 {
   P = error;             // 比例
