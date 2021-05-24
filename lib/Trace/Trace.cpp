@@ -62,9 +62,9 @@ float Trace::get_state()
     // 先定义6种状态,后面can define more
     // now haven't used g_core() ——> the core
     if(gll() && !gl2()) // 10X X XXX  big right   没有检测到返回1
-        return -4;   // 最外面没有但是 次外有
-    if(grr() && !gr2())// XXX X X01  big left
-        return 4;
+        return -3;   // 最外面没有但是 次外有
+    if(grr() && !gr2()) // XXX X X01  big left
+        return 3;
 
     if(!gl2())  // X0X X XXX mid right  (如果l2已经检测不到了 ll )
         return -2;
@@ -76,7 +76,8 @@ float Trace::get_state()
     if(!grc()) // XXX X 0XX left
         return 1;
     
-    
+    //! 检测到是 0 ?  检测到亮 集成
+    //! 
     // if (gll() && !glc()) // state 10XX 大右转 没有或者说不需要考虑最左边检测到 0XXX
     //     return -5.5;
     // if (grr() && !grc()) // state XX01 大左转

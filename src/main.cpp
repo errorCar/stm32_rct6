@@ -62,7 +62,7 @@ Infrared Inf_r(INFRA_R);// 红外模块_右
 Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
-#define SPEED_VALUE 20
+#define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = speedl * 1.05;  // 右电机补偿
 float Kp = 6, Ki = 0.01, Kd = 20; // PID参数    8 0.02 35  6 0.01 20 V==20
@@ -78,36 +78,6 @@ int num = 0;
 void num_add()
 {
    num++;
-}
-// void begin_beep()
-// {
-//     dl.beep();
-//     // delayMicroseconds(50);
-// }
-void turn_big_r()
-{
-  // calc_pid();
-  lm.forward(speedl + BIG_TURN_V);
-  rm.forward(speedr - BIG_TURN_V);
-  delayMicroseconds(500);
-}
-void turn_r()
-{
-  lm.forward(speedl + TURN_V);
-  rm.forward(speedr - TURN_V );
-  delayMicroseconds(500);
-}
-void turn_l()
-{
-  lm.forward(speedl - TURN_V);
-  rm.forward(speedr + TURN_V );
-  delayMicroseconds(500);
-}
-void turn_big_l()
-{
-  lm.forward(speedl - BIG_TURN_V);
-  rm.forward(speedr + BIG_TURN_V);
-  delayMicroseconds(500);
 }
 void setup()
 {
@@ -130,23 +100,13 @@ void setup()
 // PC12
 void loop()
 {
-  //todo 1.红外检测障碍
-  //todo  2.调参跑圈
-  //todo  3.加键盘调参
-  // !转弯while
-  ////!暴力delay when turn xxx 会导致停顿之后迅速转弯，
-  // ! 调大I
   display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
   // 加上角度!!!!
   calc_pid();
-  //手动加上延迟
-  // pid_val *= 0.5;
-  // pid_val*=2;
-  lm.forward(speedl - pid_val);
-  rm.forward(speedr + pid_val);
-    
+  lm.forward(speedl + pid_val);
+  rm.forward(speedr - pid_val);
   // !显示部分
   // *显示时间
   display.setCursor(0, 0);
