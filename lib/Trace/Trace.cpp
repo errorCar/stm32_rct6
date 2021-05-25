@@ -35,17 +35,17 @@ bool Trace::grr() // 右右传感器
 {
     return digitalRead(rr);
 }
-bool Trace::gl2() // 右右传感器
-{
-    return digitalRead(l1);
+bool Trace::gl2() // m1
+{// 设置全部检测到返回 1 
+    return !digitalRead(l1);
 }
-bool Trace::gr2() // 右右传感器
+bool Trace::gr2() // m2
 {
-    return digitalRead(r1);
+    return !digitalRead(r1);
 }
-bool Trace::g_core()
+bool Trace::g_core() // core
 {
-    return digitalRead(core);
+    return !digitalRead(core);
 }
 float Trace::get_state()
 {
@@ -59,25 +59,27 @@ float Trace::get_state()
     // !如果更密集是否需要更多组合的判断???
     // 更改后  一共有5个灯 X    X   X   X   X   X   X
     //                   gll  gl2  glc core grc gr2  grr
+    //                         m1                m2
     // 先定义6种状态,后面can define more
     // now haven't used g_core() ——> the core
-    if(gll() && !gl2()) // 10X X XXX  big right   没有检测到返回1
-        return -3;   // 最外面没有但是 次外有
-    if(grr() && !gr2()) // XXX X X01  big left
-        return 3;
+    if(gll() && !glc()) // 1X0 X XXX  big left   !有检测到返回1
+        return -4;   //
+    if(grr() && !grc()) // XXX X 0X1  big right
+        return 4;
 
-    if(!gl2())  // X0X X XXX mid right  (如果l2已经检测不到了 ll )
+    if(gl2())  // X1X X XXX mid left  
         return -2;
-    if(!gr2())  // XXX X X0X mid left 
+    if(gr2())  // XXX X X1X mid right 
         return 2;
 
-    if(!glc()) // XX0 X XXX right
+    if(glc()) // XX1 X XXX left
         return -1;
-    if(!grc()) // XXX X 0XX left
+    if(grc()) // XXX X 1XX right
         return 1;
     
-    //! 检测到是 0 ?  检测到亮 集成
-    //! 
+    //! 检测到是 1 ?  检测到亮 集成
+
+    //! 实际上是左???   
     // if (gll() && !glc()) // state 10XX 大右转 没有或者说不需要考虑最左边检测到 0XXX
     //     return -5.5;
     // if (grr() && !grc()) // state XX01 大左转

@@ -129,9 +129,9 @@ void loop()
   display.println(pid_val);
 
   // // *显示电量
-  // display.print("BAT:");
-  // display.print(bat.get_bat());
-  // display.print("%");
+  display.print("BAT:");
+  display.print(bat.get_bat());
+  display.print("%");
 
   display.display();
 }
