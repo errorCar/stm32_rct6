@@ -32,7 +32,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define L2 PC2
 #define R2 PC3
 #define CORE PC14
-Trace t(LL, LC, RC, RR,L2,R2,CORE); // 初始化循迹传感器模块
+Trace t(LL, LC, RC, RR, L2, CORE, R2); // 初始化循迹传感器模块
 
 // *左电机 电机检测
 #define AL PA2
@@ -128,10 +128,24 @@ void loop()
   display.print("PID-VAL:");
   display.println(pid_val);
 
-  // // *显示电量
-  display.print("BAT:");
-  display.print(bat.get_bat());
-  display.print("%");
+  // *显示电量
+  // display.print("BAT:");
+  // display.print(bat.get_bat());
+  // display.println("%");
+
+    // 显示返回值!!
+  display.print("l1 = ");
+  display.print(digitalRead(L2));
+  display.print("r1 = ");
+  display.println(digitalRead(R2));
+  display.print(digitalRead(PA15));
+  display.print(digitalRead(PC10));
+  display.print(digitalRead(PC11));
+  display.print(digitalRead(PC12));
+// PA15
+// #define LC PC10
+// #define RC PC11
+// #define RR PC12
 
   display.display();
 }
