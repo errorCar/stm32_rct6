@@ -66,7 +66,7 @@ Battery bat; // 初始化电池对象
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
-float Kp = 6, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 6, Ki = 0.01, Kd = 10; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -74,12 +74,17 @@ float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
 unsigned long pre_time=0;
 bool is_straight=false;
 int count_0 = 0;
+int core_val = 0,pre_core_val=0;
 void calc_pid(); // 计算PID函数
 
 int num = 0;
 void num_add()
 {
    num++;
+}
+void count_zero()
+{
+  count_0++;
 }
 void setup()
 {
@@ -95,6 +100,8 @@ void setup()
   display.clearDisplay();
   display.setTextColor(WHITE);
   attachInterrupt(PB1, num_add, FALLING);
+  // 没有线返回 0 
+  
 }
 // PA15
 // PC10
@@ -106,23 +113,28 @@ void loop()
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
   // // 加上角度!!!!
-  // uint8_t core_val = digitalRead(CORE); // 检测 0 ！
-  // count_0 += !core_val;
-  // if(millis()-pre_time > 2000)
-  // {
-  //   pre_time = millis();
-  //   count_0 = 0;
-  // }
-  // if(count_0 > 7)// 0 超过 7个 (或者更多)
-  // {
-  //   speedl = SPEED_VALUE * 0.5;
-  //   speedr = speedl * 1.07;
-  // }
-  // else
-  // {
-  //   speedl = SPEED_VALUE;
-  //   speedr = speedl * 1.07;
-  // }
+  // 检测 0 
+  core_val = digitalRead(CORE);
+  if(core_val != pre_core_val)
+  {
+    count_0 ++;
+  }
+  pre_core_val = core_val;
+  if(count_0 > 5)// 0 超过 7个 (或者更多)
+  {
+    speedl = SPEED_VALUE * 0.5;
+    speedr = speedl * 1.07;
+  }
+  else
+  {
+    speedl = SPEED_VALUE;
+    speedr = speedl * 1.07;
+  }
+  if(millis()-pre_time > 2000)
+  {
+    pre_time = millis();
+    count_0 = 0;
+  }
   calc_pid();
   lm.forward(speedl + pid_val);
   rm.forward(speedr - pid_val);
@@ -149,8 +161,8 @@ void loop()
   display.print("error =>");
   display.println(error);
   //!
-  // display.print("num-core = ");// 打印中间的状态!!
-  // display.print(count_0);
+  display.print("num-core = ");// 打印中间的状态!!
+  display.print(count_0);
   
   // *显示电量
   // display.print("BAT:");
