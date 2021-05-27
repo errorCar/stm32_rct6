@@ -29,12 +29,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define LC PC10
 #define RC PC11
 #define RR PC12
-#define L2 PC2
-#define R2 PC3
-#define CORE PC14
-#define BIG_R PC15
+
+#define CORE PC9
 #define BIG_L PC13
-Trace t(LL, LC, RC, RR, L2, CORE, R2,BIG_L,BIG_R); // 初始化循迹传感器模块
+#define BIG_R PC15
+Trace t(LL, LC, RC, RR,CORE); // 初始化循迹传感器模块
 
 // *左电机 电机检测
 #define AL PA2
@@ -66,8 +65,8 @@ Battery bat; // 初始化电池对象
 // *初始化速度参数 范围 0 ~ 255
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
-int16_t speedr = speedl * 1.05;  // 右电机补偿
-float Kp = 8, Ki = 0, Kd = 3; // PID参数    8 0.02 35  6 0.01 20 V==20
+int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
+float Kp = 6, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -106,24 +105,24 @@ void loop()
   display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
-  // 加上角度!!!!
-  uint8_t core_val = digitalRead(CORE);
-  count_0 += !core_val;
-  if(millis()-pre_time > 2000)
-  {
-    pre_time = millis();
-    count_0 = 0;
-  }
-  if(count_0 > 5)
-  {
-    speedl = SPEED_VALUE * 0.5;
-    speedr = speedl * 1.05;
-  }
-  else
-  {
-    speedl = SPEED_VALUE;
-    speedr = speedl * 1.05;
-  }
+  // // 加上角度!!!!
+  // uint8_t core_val = digitalRead(CORE); // 检测 0 ！
+  // count_0 += !core_val;
+  // if(millis()-pre_time > 2000)
+  // {
+  //   pre_time = millis();
+  //   count_0 = 0;
+  // }
+  // if(count_0 > 7)// 0 超过 7个 (或者更多)
+  // {
+  //   speedl = SPEED_VALUE * 0.5;
+  //   speedr = speedl * 1.07;
+  // }
+  // else
+  // {
+  //   speedl = SPEED_VALUE;
+  //   speedr = speedl * 1.07;
+  // }
   calc_pid();
   lm.forward(speedl + pid_val);
   rm.forward(speedr - pid_val);
@@ -147,13 +146,18 @@ void loop()
   // *pid参数+优化
   display.print("PID-VAL:");
   display.println(pid_val);
-
+  display.print("error =>");
+  display.println(error);
+  //!
+  // display.print("num-core = ");// 打印中间的状态!!
+  // display.print(count_0);
+  
   // *显示电量
   // display.print("BAT:");
   // display.print(bat.get_bat());
   // display.println("%");
 
-    // 显示返回值!!
+  // 显示返回值!!
   // display.print("l1 = ");
   // display.print(digitalRead(L2));
   // display.print("r1 = ");
@@ -175,8 +179,7 @@ void calc_pid()
   P = error;             // 比例
   I += error * 0.2;      // 积分
   D = error - pre_error; // 微分
-
-  pre_error = error;
+    pre_error = error;
   I = (I < -MAXI) ? -MAXI : I;
   I = (I > MAXI) ? MAXI : I;
   pid_val = (Kp * P) + (Ki * I) + (Kd * D);
