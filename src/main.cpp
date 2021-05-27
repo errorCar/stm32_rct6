@@ -32,7 +32,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define L2 PC2
 #define R2 PC3
 #define CORE PC14
-Trace t(LL, LC, RC, RR, L2, CORE, R2); // 初始化循迹传感器模块
+#define BIG_R PC15
+#define BIG_L PC13
+Trace t(LL, LC, RC, RR, L2, CORE, R2,BIG_L,BIG_R); // 初始化循迹传感器模块
 
 // *左电机 电机检测
 #define AL PA2
@@ -65,13 +67,14 @@ Battery bat; // 初始化电池对象
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = speedl * 1.05;  // 右电机补偿
-float Kp = 6, Ki = 0.01, Kd = 20; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 8, Ki = 0, Kd = 3; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
 float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
-unsigned long now_time=0;
+unsigned long pre_time=0;
 bool is_straight=false;
+int count_0 = 0;
 void calc_pid(); // 计算PID函数
 
 int num = 0;
@@ -104,6 +107,23 @@ void loop()
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
   // 加上角度!!!!
+  uint8_t core_val = digitalRead(CORE);
+  count_0 += !core_val;
+  if(millis()-pre_time > 2000)
+  {
+    pre_time = millis();
+    count_0 = 0;
+  }
+  if(count_0 > 5)
+  {
+    speedl = SPEED_VALUE * 0.5;
+    speedr = speedl * 1.05;
+  }
+  else
+  {
+    speedl = SPEED_VALUE;
+    speedr = speedl * 1.05;
+  }
   calc_pid();
   lm.forward(speedl + pid_val);
   rm.forward(speedr - pid_val);
@@ -134,14 +154,14 @@ void loop()
   // display.println("%");
 
     // 显示返回值!!
-  display.print("l1 = ");
-  display.print(digitalRead(L2));
-  display.print("r1 = ");
-  display.println(digitalRead(R2));
-  display.print(digitalRead(PA15));
-  display.print(digitalRead(PC10));
-  display.print(digitalRead(PC11));
-  display.print(digitalRead(PC12));
+  // display.print("l1 = ");
+  // display.print(digitalRead(L2));
+  // display.print("r1 = ");
+  // display.println(digitalRead(R2));
+  // display.print(digitalRead(PA15));
+  // display.print(digitalRead(PC10));
+  // display.print(digitalRead(PC11));
+  // display.print(digitalRead(PC12));
 // PA15
 // #define LC PC10
 // #define RC PC11
@@ -149,12 +169,7 @@ void loop()
 
   display.display();
 }
-//   检测到大转弯的时候?持续时间不够? 或者说得到的pid_val 的值不够大??
-//   因为检测到的时间只有一瞬，之后又检测不到了，导致 I 积累不起来? 或者说 D==0 ? 
-//   如何让它保持原状态???
-//   或者直行灯闪烁的时候做出判断??
-//   不让小车没有检测到的时候保持直线状态? 而是维持上一个状态！
-//   PID算法
+
 void calc_pid()
 {
   P = error;             // 比例
