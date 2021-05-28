@@ -71,13 +71,13 @@ const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
 float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
-unsigned long pre_time=0;
+unsigned long pre_time=0,begin_slowtime=0;
 bool is_straight=false;
 int count_0 = 0;
 int core_val = 0,pre_core_val=0;
 void calc_pid(); // 计算PID函数
 
-int num = 0;
+int num = 0,state_straight=1;
 void num_add()
 {
    num++;
@@ -115,20 +115,30 @@ void loop()
   // // 加上角度!!!!
   // 检测 0 
   core_val = digitalRead(CORE);
-  if(core_val != pre_core_val)
-  {
-    count_0 ++;
-  }
+  // if(core_val != pre_core_val)
+  // {
+  //   count_0 ++;
+  // }
+  count_0 += core_val^pre_core_val; // 相同为0,不同为1
   pre_core_val = core_val;
-  if(count_0 > 5)// 0 超过 7个 (或者更多)
-  {
+  if(count_0 > 5 && state_straight ==1)// 0 超过 7个 (或者更多) 直线状态
+  {// 进入某种state,使得一段时间(2s)不会再执行清零稳定保持减速),而不是在2s内随机清零 
+    state_straight = 0;
+    begin_slowtime = millis();
     speedl = SPEED_VALUE * 0.5;
     speedr = speedl * 1.07;
+    // 进入 0 state 时才开始计时 3 => slow down 3s
+    
   }
-  else
+  else if(state_straight == 1)// 直线状态速度恢复正常
   {
     speedl = SPEED_VALUE;
     speedr = speedl * 1.07;
+  }
+
+  if(state_straight==0  && millis()-begin_slowtime>3000)
+  {// 弯道状态开始时才会执行此行 && 弯道state 已经经过了3s 以上
+    state_straight = 1;// return to straight_state
   }
   if(millis()-pre_time > 2000)
   {
