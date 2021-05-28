@@ -66,7 +66,7 @@ Battery bat; // 初始化电池对象
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
-float Kp = 6, Ki = 0.01, Kd = 10; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 7, Ki = 0.01, Kd = 15; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -76,7 +76,6 @@ bool is_straight=false;
 int count_0 = 0;
 int core_val = 0,pre_core_val=0;
 void calc_pid(); // 计算PID函数
-
 int num = 0,state_straight=1;
 void num_add()
 {
@@ -121,31 +120,32 @@ void loop()
   // }
   count_0 += core_val^pre_core_val; // 相同为0,不同为1
   pre_core_val = core_val;
-  if(count_0 > 5 && state_straight ==1)// 0 超过 7个 (或者更多) 直线状态
+  if(count_0/2 >= 3 && state_straight)// 0 超过 7个 (或者更多) 直线状态 -> 记录闪烁
   {// 进入某种state,使得一段时间(2s)不会再执行清零稳定保持减速),而不是在2s内随机清零 
     state_straight = 0;
     begin_slowtime = millis();
     speedl = SPEED_VALUE * 0.5;
     speedr = speedl * 1.07;
     // 进入 0 state 时才开始计时 3 => slow down 3s
-    
   }
-  else if(state_straight == 1)// 直线状态速度恢复正常
+  else if(state_straight)// 直线状态速度恢复正常
   {
     speedl = SPEED_VALUE;
     speedr = speedl * 1.07;
+    
   }
 
   if(state_straight==0  && millis()-begin_slowtime>3000)
   {// 弯道状态开始时才会执行此行 && 弯道state 已经经过了3s 以上
     state_straight = 1;// return to straight_state
   }
-  if(millis()-pre_time > 2000)
+  if(millis()-pre_time > 3000)
   {
     pre_time = millis();
     count_0 = 0;
   }
   calc_pid();
+  
   lm.forward(speedl + pid_val);
   rm.forward(speedr - pid_val);
   // !显示部分

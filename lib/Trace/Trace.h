@@ -28,6 +28,7 @@ public:
 private:
     uint8_t ll, lc, rc, rr,big_l,big_r,core; //传感器引脚
     uint8_t state;          // 当前状态
+    int r_l,r_r;
 };
 
 #endif //STM32_RCT6_TRACE_H
