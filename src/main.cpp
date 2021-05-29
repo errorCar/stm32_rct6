@@ -25,14 +25,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // Dis dr(DR_TRIG, DR_ECHO); // 右超声波
 
 // *循迹检测
-#define LL PA15
-#define LC PC10
-#define RC PC11
-#define RR PC12
-
-#define CORE PC9
-#define BIG_L PC13
-#define BIG_R PC15
+#define LL PB3
+#define LC PB4
+#define RC PB5
+#define RR PB6
+#define CORE PB7
 Trace t(LL, LC, RC, RR,CORE); // 初始化循迹传感器模块
 
 // *左电机 电机检测
@@ -42,31 +39,25 @@ Trace t(LL, LC, RC, RR,CORE); // 初始化循迹传感器模块
 #define AR PA4
 #define BR PA5
 // *左电机
-#define PWML PB8  // PWM调速
-#define AINL PB10 // 方向控制
-#define BINL PB11 // A-B+ 前进 A+B- 后退
+#define PWML PB0  // PWM调速
+#define AINL PB12 // 方向控制
+#define BINL PB13 // A-B+ 前进 A+B- 后退
 // *右电机
-#define PWMR PB9
-#define AINR PB12
-#define BINR PB13
-// *左右红外检测
-#define INFRA_L PC0
-#define INFRA_R PC1
-// *big turn value
-#define BIG_TURN_V  5 
-#define TURN_V 3
-// #define DURATION 1000
+#define PWMR PB1  
+#define AINR PB14
+#define BINR PB15// 
+
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
-Infrared Inf_l(INFRA_L);// 红外模块_左
-Infrared Inf_r(INFRA_R);// 红外模块_右
+// Infrared Inf_l(INFRA_L);// 红外模块_左
+// Infrared Inf_r(INFRA_R);// 红外模块_右
 Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
-float Kp = 7, Ki = 0.01, Kd = 15; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 8, Ki = 0, Kd = 8; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -114,14 +105,13 @@ void loop()
   // // 加上角度!!!!
   // 检测 0 
   core_val = digitalRead(CORE);
-  // if(core_val != pre_core_val)
-  // {
-  //   count_0 ++;
-  // }
-  count_0 += core_val^pre_core_val; // 相同为0,不同为1
+  if(core_val - pre_core_val== -1)//check 0
+  {
+    count_0 ++;
+  }
   pre_core_val = core_val;
-  if(count_0/2 >= 3 && state_straight)// 0 超过 7个 (或者更多) 直线状态 -> 记录闪烁
-  {// 进入某种state,使得一段时间(2s)不会再执行清零稳定保持减速),而不是在2s内随机清零 
+  if(count_0 >= 4 && state_straight)// 0 超过 7个 (或者更多) 直线状态 -> 记录闪烁
+  {// 进入 弯道-state ,使得一段时间(2s)不会再执行清零稳定保持减速),而不是在2s内随机清零 
     state_straight = 0;
     begin_slowtime = millis();
     speedl = SPEED_VALUE * 0.5;
@@ -131,15 +121,13 @@ void loop()
   else if(state_straight)// 直线状态速度恢复正常
   {
     speedl = SPEED_VALUE;
-    speedr = speedl * 1.07;
-    
+    speedr = speedl * 1.07; 
   }
-
   if(state_straight==0  && millis()-begin_slowtime>3000)
   {// 弯道状态开始时才会执行此行 && 弯道state 已经经过了3s 以上
     state_straight = 1;// return to straight_state
   }
-  if(millis()-pre_time > 3000)
+  if(millis()-pre_time > 2000)// 不管什么状态都会2s清0
   {
     pre_time = millis();
     count_0 = 0;
@@ -168,7 +156,7 @@ void loop()
   // *pid参数+优化
   display.print("PID-VAL:");
   display.println(pid_val);
-  display.print("error =>");
+  display.print("error = ");
   display.println(error);
   //!
   display.print("num-core = ");// 打印中间的状态!!
@@ -201,7 +189,8 @@ void calc_pid()
   P = error;             // 比例
   I += error * 0.2;      // 积分
   D = error - pre_error; // 微分
-    pre_error = error;
+  
+  pre_error = error;
   I = (I < -MAXI) ? -MAXI : I;
   I = (I > MAXI) ? MAXI : I;
   pid_val = (Kp * P) + (Ki * I) + (Kd * D);
