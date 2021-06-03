@@ -40,7 +40,7 @@ float Motor::speed()
 void Motor::forward(int16_t speed)
 {
     if (speed < 0)
-        backward(-speed);
+        return;
     else
     {
         // 前进
@@ -53,7 +53,7 @@ void Motor::forward(int16_t speed)
 void Motor::backward(int16_t speed)
 {
     if (speed < 0)
-        forward(-speed);
+        return;
     else
     {
         // 后退

@@ -62,16 +62,17 @@ float Trace::get_state()
 {
     // 更改后  一共有5个灯 X   X      X         X     X   X
     //                   gbl gll   glc       grc  grr   gbr
-    float r = 0;
+    // float r = 0;
     if(glc())// left 返回负值 左边检测到了往左
-        r+= -2;
+        return -2;
     if(grc())// right return +
-        r+= 2;
+        return 2;
     if(gll())
-        r+= -5;
+        return -5;
     if(grr())//right
-        r+= 5;     
-    return r;
+        return 5;     
+    return 0;
+    // return r;
     //! 检测到是 1 !!!!  检测到亮 集成
 
     //! 实际上是左???   
@@ -79,10 +80,7 @@ float Trace::get_state()
     //     return -6;
     // if(gbr())
     //     return 6;
-    // if (gll() && !glc()) // state 10XX 大右转 没有或者说不需要考虑最左边检测到 0XXX
-    //     return -8;   //左??
-    // if (grr() && !grc()) // state XX01 大左转
-    //     return 8;
+   
     // if (gll() && glc() && !grc()) // state 110X 中右转
     //     return -2;
     // if (grr() && grc() && !glc()) // state X011 中左转
@@ -91,5 +89,9 @@ float Trace::get_state()
     //     return -1.5;
     // if (grc() && !grr() && !glc()) // state X010 小左转
     //     return 1.5;
-    // return 0;
+    // if (gll() && !glc()) // state 10XX 大右转 没有或者说不需要考虑最左边检测到 0XXX
+    //     return -4;   //左
+    // if (grr() && !grc()) // state XX01 大左转
+    //     return 4;
+    
 }
