@@ -36,12 +36,19 @@ uint8_t Trace::get_scan()
 	uint16_t l21_ = digitalRead(l2);
 	uint16_t l31_ = digitalRead(l3);
 	uint16_t l41_ = digitalRead(l4);
-
     uint16_t r11_ = digitalRead(r1);
 	uint16_t r21_ = digitalRead(r2);
 	uint16_t r31_ = digitalRead(r3);
 	uint16_t r41_ = digitalRead(r4);
-
+    scanvalue += l11_ << 8;
+    scanvalue += l21_ << 7;
+    scanvalue += l31_ << 6;
+    scanvalue += l41_ << 5;
+    scanvalue += r11_ << 4;
+    scanvalue += r21_ << 3;
+    scanvalue += r31_ << 2;
+    scanvalue += r41_ << 1;
+    return scanvalue;
 }
 bool Trace::g_core() // core
 {

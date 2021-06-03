@@ -36,13 +36,13 @@ Trace t(L1,L2,L3,L4,R1,R2,R3,R4,CORE); // 初始化循迹传感器模块
 #define AR PA4
 #define BR PA12
 // *左电机
-#define PWML PC1  // PWM调速
+#define PWML PB8  // PWM调速
 #define AINL PB10 // 方向控制
 #define BINL PB11 // A-B+ 前进 A+B- 后退
 // *右电机
-#define PWMR PC0
-#define AINR PB0
-#define BINR PB1
+#define PWMR PA1
+#define AINR PB12
+#define BINR PB13
 // #define DURATION 1000
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
@@ -50,10 +50,10 @@ Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
 Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
-#define SPEED_VALUE 35
+#define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE;
 int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
-float Kp = 4, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 5, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -84,7 +84,7 @@ void setup()
 }
 void loop()
 {
-  display.clearDisplay();
+  // display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
   
