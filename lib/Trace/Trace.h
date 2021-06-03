@@ -10,24 +10,18 @@
 class Trace
 {
 public:
-    // 循迹灰度传感器 左左 左中 右中 右右
-    Trace(uint8_t o1, uint8_t o2,
-          uint8_t o3, uint8_t o4,uint8_t mid);
-    bool gll(); // 左左
-    bool glc(); // 左中
-    bool grc(); // 右中
-    bool grr(); // 右右
-    // bool gl2();
-    // bool gr2();
-    // bool gbl();
-    // bool gbr();
+    // 循迹灰度传感器 
+    Trace(uint8_t l11, uint8_t l21,uint8_t l31, uint8_t l41,
+        uint8_t r11,uint8_t r21,uint8_t r31,uint8_t r41,uint8_t mid);
+    uint8_t get_scan();
     bool g_core();
     // 0 正常 -1 -2 左亮灯 1 2 右亮灯
     float get_state(); // 获取传感器状态
 
 private:
-    uint8_t ll, lc, rc, rr,big_l,big_r,core; //传感器引脚
+    uint8_t l1,l2,l3,l4, r1,r2,r3,r4,core; //传感器引脚
     uint8_t state;          // 当前状态
+    uint8_t scanvalue;
 };
 
 #endif //STM32_RCT6_TRACE_H

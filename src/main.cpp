@@ -15,29 +15,34 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // *循迹检测
-#define LL PA15
-#define LC PC10
-#define RC PC11
-#define RR PC12
+#define L1 PC8
+#define L2 PA8
+#define L3 PC9
+#define L4 PA10
+
+#define R1 PC6
+#define R2 PC7
+#define R3 PB14
+#define R4 PB15
 
 #define CORE PC9
 
-Trace t(LL, LC, RC, RR,CORE); // 初始化循迹传感器模块
+Trace t(L1,L2,L3,L4,R1,R2,R3,R4,CORE); // 初始化循迹传感器模块
 
 // *左电机 电机检测
 #define AL PA2
 #define BL PA3
 // *右电机 电机检测
 #define AR PA4
-#define BR PA5
+#define BR PA12
 // *左电机
 #define PWML PC1  // PWM调速
 #define AINL PB10 // 方向控制
 #define BINL PB11 // A-B+ 前进 A+B- 后退
 // *右电机
 #define PWMR PC0
-#define AINR PB12
-#define BINR PB13
+#define AINR PB0
+#define BINR PB1
 // #define DURATION 1000
 Motor lm(PWML, AINL, BINL, AL, BL); // 初始化左侧电机
 Motor rm(PWMR, AINR, BINR, AR, BR); // 初始化右侧电机
@@ -59,11 +64,7 @@ int count_0 = 0;
 int core_val = 0,pre_core_val=0;
 void calc_pid(); // 计算PID函数
 
-// int num = 0;
-// void num_add()
-// {
-//    num++;
-// }
+
 void setup()
 {
   // *屏幕初始化
