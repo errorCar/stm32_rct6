@@ -32,22 +32,22 @@ Trace::Trace(uint8_t l11, uint8_t l21,uint8_t l31, uint8_t l41,
 uint8_t Trace::get_scan()
 {
     uint8_t scanvalue=0;
-	uint16_t l11_ = digitalRead(l1);
-	uint16_t l21_ = digitalRead(l2);
-	uint16_t l31_ = digitalRead(l3);
-	uint16_t l41_ = digitalRead(l4);
-    uint16_t r11_ = digitalRead(r1);
-	uint16_t r21_ = digitalRead(r2);
-	uint16_t r31_ = digitalRead(r3);
-	uint16_t r41_ = digitalRead(r4);
-    scanvalue += l11_ << 8;
-    scanvalue += l21_ << 7;
-    scanvalue += l31_ << 6;
-    scanvalue += l41_ << 5;
-    scanvalue += r11_ << 4;
-    scanvalue += r21_ << 3;
-    scanvalue += r31_ << 2;
-    scanvalue += r41_ << 1;
+	uint8_t l11_ = digitalRead(l1);
+	uint8_t l21_ = digitalRead(l2);
+	uint8_t l31_ = digitalRead(l3);
+	uint8_t l41_ = digitalRead(l4);
+    uint8_t r11_ = digitalRead(r1);
+	uint8_t r21_ = digitalRead(r2);
+	uint8_t r31_ = digitalRead(r3);
+	uint8_t r41_ = digitalRead(r4);// 最右的是反的
+    scanvalue += l11_ << 7;
+    scanvalue += l21_ << 6;
+    scanvalue += l31_ << 5;
+    scanvalue += l41_ << 4;
+    scanvalue += r11_ << 3;
+    scanvalue += r21_ << 2;
+    scanvalue += r31_ << 1;
+    scanvalue += r41_ ;
     return scanvalue;
 }
 bool Trace::g_core() // core
@@ -67,23 +67,23 @@ float Trace::get_state()
         0000 0001 1   0x01
     */
     uint8_t v = get_scan();// 左边传感器检测到 返回负
-    if(v == 0x80)
-        return -4;
-    if(v == 0x40)
+    if(v == 0xc0)//1100 0000 => v==0xc0
+        return -10;// 0110 0000 => 
+    if(v & 0x01)
+        return 10;
+    if(v & 0x40)
+        return -7;
+    if(v & 0x02)
+        return 7;
+    if(v & 0x20)
+        return -5;
+    if(v & 0x04)
+        return 5;
+    if(v & 0x10)
         return -3;
-    if(v == 0x20)
-        return -2;
-    if(v == 0x10)
-        return -1;
-    
-    if(v == 0x08)
-        return 1;
-    if(v == 0x04)
-        return 2;
-    if(v == 0x02)
+    if(v & 0x08)
         return 3;
-    if(v == 0x01)
-        return 4;
+
     return 0;
     // return r;
     //! 检测到是 1 !!!!  检测到亮 集成

@@ -51,69 +51,74 @@ Battery bat; // 初始化电池对象
 
 // *初始化速度参数 范围 0 ~ 255
 #define SPEED_VALUE 30
-int16_t speedl = SPEED_VALUE;
-int16_t speedr = SPEED_VALUE * 1.07;  // 右电机补偿
-float Kp = 5, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
+int16_t speedl = SPEED_VALUE*1.5;
+int16_t speedr = SPEED_VALUE;  // 右电机补偿
+float Kp = 15, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
 float error = 0, pre_error = 0;  // 误差值, 前误差, 误差积分
 unsigned long pre_time=0;
-bool is_straight=false;
-int count_0 = 0;
-int core_val = 0,pre_core_val=0;
-void calc_pid(); // 计算PID函数
 
+int v_val = 0;
+
+void calc_pid(); // 计算PID函数
+void print_bit(uint8_t x);
 
 void setup()
 {
   // *屏幕初始化
-  // Serial.begin(9600);
-  // Serial.println("ultrasonic sensor");
-  // while (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-  // {
-  //   Serial.println("SSD1306 allocation failed");
-  //   delay(1000);
-  // }
-  // delay(1000);
-  // display.clearDisplay();
-  // display.setTextColor(WHITE);
+  Serial.begin(9600);
+  Serial.println("ultrasonic sensor");
+  while (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println("SSD1306 allocation failed");
+    delay(1000);
+  }
+  delay(1000);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
   // attachInterrupt(PB1, num_add, FALLING);
-  // 没有线返回 0 
-  
 }
 void loop()
 {
-  // display.clearDisplay();
+  display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
-  
-  calc_pid();
-  lm.forward(speedl + pid_val);
-  rm.forward(speedr - pid_val);
+  // calc_pid();
+  v_val = t.get_scan();
+
+  lm.forward(35 + error);// 差值为15
+  rm.forward(20 - error);
 
   // !显示部分
   // *显示时间
-  // display.setCursor(0, 0);
-  // display.print("TIME:");
-  // display.print(millis() / 1000);
-  // display.println("s");
-  // // *显示里程数
+  display.setCursor(0, 0);
+  display.print("TIME:");
+  display.print(millis() / 1000);
+  display.println("s");
+  // *显示里程数
   // display.print("RUN:");
   // display.print(num * (21.2 / 20));
   // display.println("mm");
-
-
-  // *pid参数+优化
-  // display.print("PID-VAL:");
-  // display.println(pid_val);
-  // display.print("error =>");
-  // display.println(error);
-
-  // display.display();
+  // *pid参数+优化ts
+  display.print("pid_val = ");
+  display.println(pid_val);
+  display.print("error =>");
+  display.println(error);
+  display.print("v = ");
+  print_bit(v_val);
+  display.display();
   // delay(100);
 }
-
+void print_bit(uint8_t x)
+{
+  for(int i=1;i<=8;i++)
+  {// 从右往左 
+    display.print((x&(1<<7))>>7);
+    x = x<<1;
+  }
+}
 void calc_pid()
 {
   P = error;             // 比例
