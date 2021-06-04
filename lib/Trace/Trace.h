@@ -11,8 +11,8 @@ class Trace
 {
 public:
     // 循迹灰度传感器 
-    Trace(uint8_t l11, uint8_t l21,uint8_t l31, uint8_t l41,
-        uint8_t r11,uint8_t r21,uint8_t r31,uint8_t r41,uint8_t mid);
+    Trace(uint8_t l11, uint8_t l21,uint8_t l31,
+        uint8_t r11,uint8_t r21,uint8_t r31,uint8_t mid);
     uint8_t get_scan();
     bool g_core();
     // 0 正常 -1 -2 左亮灯 1 2 右亮灯
