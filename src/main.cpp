@@ -53,7 +53,7 @@ Battery bat; // 初始化电池对象
 #define SPEED_VALUE 30
 int16_t speedl = SPEED_VALUE*1.5;
 int16_t speedr = SPEED_VALUE;  // 右电机补偿
-float Kp = 15, Ki = 0, Kd = 0; // PID参数    8 0.02 35  6 0.01 20 V==20
+float Kp = 1, Ki = 0, Kd = 0.6; // PID参数    8 0.02 35  6 0.01 20 V==20
 const float MAXI = 30;           // 积分最大值
 float P = 0, I = 0, D = 0;       // 比例, 积分, 微分
 float pid_val = 0;               // PID修正值
@@ -85,12 +85,12 @@ void loop()
   display.clearDisplay();
   // !修正部分
   error = t.get_state(); // 采集误差  5 2 1
-  // calc_pid();
+  calc_pid();
   v_val = t.get_scan();
-
-  lm.forward(35 + error);// 差值为15
-  rm.forward(20 - error);
-
+  
+  lm.forward(30 + pid_val);// 差值为15
+  rm.forward(25 - pid_val);
+  
   // !显示部分
   // *显示时间
   display.setCursor(0, 0);

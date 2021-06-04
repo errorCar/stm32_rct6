@@ -57,7 +57,7 @@ bool Trace::g_core() // core
 float Trace::get_state()
 {
     /*
-        1000 0000 128 0x80
+        1000 0000 128 0x80 第四个error
         0100 0000 64  0x40
         0010 0000 32  0x20   
         0001 0000 16  0x10  
@@ -67,23 +67,32 @@ float Trace::get_state()
         0000 0001 1   0x01
     */
     uint8_t v = get_scan();// 左边传感器检测到 返回负
-    if(v == 0xc0)//1100 0000 => v==0xc0
-        return -10;// 0110 0000 => 
-    if(v & 0x01)
-        return 10;
-    if(v & 0x40)
-        return -7;
-    if(v & 0x02)
-        return 7;
+
+    // if(v & 0x10)
+    //     return -5;
     if(v & 0x20)
         return -5;
     if(v & 0x04)
         return 5;
-    if(v & 0x10)
-        return -3;
-    if(v & 0x08)
-        return 3;
+    if(v & 0x40)
+        return -8;
+    if(v & 0x02)
+        return 8;
+    if(v & 0x80)//1100 0000 => v==0xc0
+        return -12;// 0110 0000 => 
+    if(v & 0x01)
+        return 12;
 
+    if(v & 0x08)
+        return 5;
+    // if(v>=0x40)//v == 0xc0 || v == 0x80 || v == 0x40
+    //     return -15;
+    // else if(v>=0x20)
+    //     return -10;
+    // else if(v<=0x02)
+    //     return 15;
+    // else if(v<0x08)
+    //     return 10;
     return 0;
     // return r;
     //! 检测到是 1 !!!!  检测到亮 集成
